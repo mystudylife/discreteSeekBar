@@ -441,6 +441,10 @@ public class DiscreteSeekBar extends View {
         mPublicChangeListener = listener;
     }
 
+    public void setTrackColor(int color) {
+        mTrack.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
+    }
+
     /**
      * Sets the color of the seek thumb, as well as the color of the popup indicator.
      *
