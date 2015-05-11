@@ -139,8 +139,8 @@ public class DiscreteSeekBar extends View {
 
     private int mMax;
     private int mMin;
+    private int mStep;
     private int mValue;
-    private int mKeyProgressIncrement = 1;
     private boolean mMirrorForRtl = false;
     private boolean mAllowTrackClick = true;
     //We use our own Formatter to avoid creating new instances on every progress change
@@ -190,12 +190,14 @@ public class DiscreteSeekBar extends View {
 
         int max = 100;
         int min = 0;
+        int step = 1;
         int value = 0;
         mMirrorForRtl = a.getBoolean(R.styleable.DiscreteSeekBar_dsb_mirrorForRtl, mMirrorForRtl);
         mAllowTrackClick = a.getBoolean(R.styleable.DiscreteSeekBar_dsb_allowTrackClickToDrag, mAllowTrackClick);
 
         int indexMax = R.styleable.DiscreteSeekBar_dsb_max;
         int indexMin = R.styleable.DiscreteSeekBar_dsb_min;
+        int indexStep = R.styleable.DiscreteSeekBar_dsb_step;
         int indexValue = R.styleable.DiscreteSeekBar_dsb_value;
         final TypedValue out = new TypedValue();
         //Not sure why, but we wanted to be able to use dimensions here...
@@ -213,6 +215,13 @@ public class DiscreteSeekBar extends View {
                 min = a.getInteger(indexMin, min);
             }
         }
+        if (a.getValue(indexStep, out)) {
+            if (out.type == TypedValue.TYPE_DIMENSION) {
+                step = a.getDimensionPixelSize(indexStep, step);
+            } else {
+                step = a.getInteger(indexStep, step);
+            }
+        }
         if (a.getValue(indexValue, out)) {
             if (out.type == TypedValue.TYPE_DIMENSION) {
                 value = a.getDimensionPixelSize(indexValue, value);
@@ -223,6 +232,7 @@ public class DiscreteSeekBar extends View {
 
         mMin = min;
         mMax = Math.max(min + 1, max);
+        mStep = 1;
         mValue = Math.max(min, Math.min(max, value));
         updateKeyboardRange();
 
@@ -371,6 +381,20 @@ public class DiscreteSeekBar extends View {
         return mMin;
     }
 
+    public void setStep(int step) {
+        mStep = step;
+        
+        int steppedValue = Math.round(mValue / step) * step;
+        
+        if (steppedValue != mValue) {
+            setProgress(steppedValue);
+        }
+    }
+    
+    public int getStep() {
+        return mStep;
+    }
+
     /**
      * Sets the current progress for this DiscreteSeekBar
      * The supplied argument will be capped to the current MIN-MAX range
@@ -484,10 +508,10 @@ public class DiscreteSeekBar extends View {
 
     private void updateKeyboardRange() {
         int range = mMax - mMin;
-        if ((mKeyProgressIncrement == 0) || (range / mKeyProgressIncrement > 20)) {
+        if ((mStep == 0) || (range / mStep > 20)) {
             // It will take the user too long to change this via keys, change it
             // to something more reasonable
-            mKeyProgressIncrement = Math.max(1, Math.round((float) range / 20));
+            mStep = Math.max(1, Math.round((float) range / 20));
         }
     }
 
@@ -698,12 +722,12 @@ public class DiscreteSeekBar extends View {
                 case KeyEvent.KEYCODE_DPAD_LEFT:
                     handled = true;
                     if (progress <= mMin) break;
-                    animateSetProgress(progress - mKeyProgressIncrement);
+                    animateSetProgress(progress - mStep);
                     break;
                 case KeyEvent.KEYCODE_DPAD_RIGHT:
                     handled = true;
                     if (progress >= mMax) break;
-                    animateSetProgress(progress + mKeyProgressIncrement);
+                    animateSetProgress(progress + mStep);
                     break;
             }
         }
@@ -781,7 +805,7 @@ public class DiscreteSeekBar extends View {
         if (isRtl()) {
             scale = 1f - scale;
         }
-        int progress = Math.round((scale * (mMax - mMin)) + mMin);
+        int progress = Math.round(((scale * (mMax - mMin)) + mMin) / mStep) * mStep;
         setProgress(progress, true);
     }
 
@@ -792,7 +816,7 @@ public class DiscreteSeekBar extends View {
         int left = getPaddingLeft() + halfThumb + addedThumb;
         int right = getWidth() - (getPaddingRight() + halfThumb + addedThumb);
         int available = right - left;
-        int progress = Math.round((scale * (mMax - mMin)) + mMin);
+        int progress = Math.round(((scale * (mMax - mMin)) + mMin) / mStep) * mStep;
         //we don't want to just call setProgress here to avoid the animation being cancelled,
         //and this position is not bound to a real progress value but interpolated
         if (progress != getProgress()) {

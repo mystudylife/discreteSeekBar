@@ -21,6 +21,7 @@
     <declare-styleable name="DiscreteSeekBar">
         <attr name="dsb_min" format="integer|dimension"/>
         <attr name="dsb_max" format="integer|dimension"/>
+        <attr name="dsb_step" format="integer|dimension"/>
         <attr name="dsb_value" format="integer|dimension"/>
         <attr name="dsb_mirrorForRtl" format="boolean"/>
         <attr name="dsb_allowTrackClickToDrag" format="boolean"/>
