@@ -232,7 +232,7 @@ public class DiscreteSeekBar extends View {
 
         mMin = min;
         mMax = Math.max(min + 1, max);
-        mStep = 1;
+        mStep = step;
         mValue = Math.max(min, Math.min(max, value));
         updateKeyboardRange();
 
