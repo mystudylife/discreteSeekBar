@@ -141,6 +141,7 @@ public class DiscreteSeekBar extends View {
     private int mMin;
     private int mStep;
     private int mValue;
+    private int mKeyProgressIncrement;
     private boolean mMirrorForRtl = false;
     private boolean mAllowTrackClick = true;
     //We use our own Formatter to avoid creating new instances on every progress change
@@ -512,10 +513,10 @@ public class DiscreteSeekBar extends View {
 
     private void updateKeyboardRange() {
         int range = mMax - mMin;
-        if ((mStep == 0) || (range / mStep > 20)) {
+        if ((mKeyProgressIncrement == 0) || (range / mKeyProgressIncrement > 20)) {
             // It will take the user too long to change this via keys, change it
             // to something more reasonable
-            mStep = Math.max(1, Math.round((float) range / 20));
+            mKeyProgressIncrement = Math.max(mStep, Math.round(((float) range / 20) / mStep) * mStep);
         }
     }
 
@@ -726,12 +727,12 @@ public class DiscreteSeekBar extends View {
                 case KeyEvent.KEYCODE_DPAD_LEFT:
                     handled = true;
                     if (progress <= mMin) break;
-                    animateSetProgress(progress - mStep);
+                    animateSetProgress(progress - mKeyProgressIncrement);
                     break;
                 case KeyEvent.KEYCODE_DPAD_RIGHT:
                     handled = true;
                     if (progress >= mMax) break;
-                    animateSetProgress(progress + mStep);
+                    animateSetProgress(progress + mKeyProgressIncrement);
                     break;
             }
         }
